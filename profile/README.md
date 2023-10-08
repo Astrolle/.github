@@ -12,4 +12,6 @@
 -->
 
 
-Astrolle is a multiple software integrated to create a great solution for our clients, with this our client can control the data about their business 
+Astrolle is a multiple software integrated to create a great solution for our clients, with that our client can control the data about their business 
+
+A simple dashboard to manage your entire business
