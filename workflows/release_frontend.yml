@@ -1,0 +1,51 @@
+name: release_frontend
+on:
+  workflow_call:
+    inputs:
+      changelog-file:
+        required: false
+        default: CHANGELOG.md
+      main-branch:
+        required: false
+        default: main
+      tag-prefix:
+        required: false
+        default: v
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.18'
+
+      - name: Extract version from ${{ inputs.changelog-file }}
+        id: extract_version
+        run: |
+          VERSION=$(grep -m1 '^- [0-9]\+\.[0-9]\+\.[0-9]\+:' "${{ inputs.changelog-file }}" \
+                    | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Bump package.json
+        run: npm version "${{ steps.extract_version.outputs.version }}" --no-git-tag-version
+
+      - name: Commit bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json
+          git commit -m "fix(chore): bump version to v${{ steps.extract_version.outputs.version }}"
+          git push
+
+      - name: Create & push tag
+        run: |
+          bash .husky/pre-push
+          git push origin --tags
