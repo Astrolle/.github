@@ -1,39 +1,43 @@
-name: Release
+name: 🔁 Org Semantic Release
 
 on:
-  push:
-    branches:
-      - main
+  workflow_call:
+    inputs:
+      changelog-file:
+        required: false
+        type: string
+        default: CHANGELOG.md
+      main-branch:
+        required: false
+        type: string
+        default: main
+      tag-prefix:
+        required: false
+        type: string
+        default: v
 
 permissions:
   contents: write
-  issues: write
-  pull-requests: write
-  packages: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
-
     steps:
-      - name: ⬇️ Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 🔧 Setup Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          registry-url: 'https://npm.pkg.github.com/'
-          scope: '@astrolle'
 
-      - name: 📦 Install dependencies
+      - name: Install deps
         run: npm ci
 
-      - name: 🛠 Build project
+      - name: Build
         run: npm run build
 
-      - name: 🚀 Release with semantic-release
+      - name: Run semantic-release
         run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
