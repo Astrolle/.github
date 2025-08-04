@@ -1,43 +1,42 @@
-name: 🔁 Org Semantic Release
+name: 🚀 Org Semantic Release for MFEs
 
 on:
-  workflow_call:
-    inputs:
-      changelog-file:
-        required: false
-        type: string
-        default: CHANGELOG.md
-      main-branch:
-        required: false
-        type: string
-        default: main
-      tag-prefix:
-        required: false
-        type: string
-        default: v
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: write
+  packages: read
+  issues: write
+  pull-requests: write
 
 jobs:
-  release:
+  build_and_update_changelog:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
+      - name: ⬇️ Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: 🔧 Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@astrolle"
 
-      - name: Install deps
+      - name: 📦 Install dependencies
         run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.WORKFLOW_TOKEN }}
 
-      - name: Build
+      - name: 🛠 Build
         run: npm run build
 
-      - name: Run semantic-release
+      - name: 🚀 Release
         run: npx semantic-release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # <- Let GitHub set this one
+          NODE_AUTH_TOKEN: ${{ secrets.WORKFLOW_TOKEN }} # <- Your personal token here
